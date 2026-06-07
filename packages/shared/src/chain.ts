@@ -1,13 +1,13 @@
 import { defineChain } from "viem";
 
-/** Pharos Atlantic testnet (chainId 688688). */
+/** Pharos Atlantic testnet (chainId 688689). */
 export const pharosTestnet = defineChain({
-  id: 688688,
+  id: 688689,
   name: "Pharos Atlantic Testnet",
   nativeCurrency: { name: "Pharos", symbol: "PHRS", decimals: 18 },
   rpcUrls: {
     default: {
-      http: [process.env.PHAROS_RPC_URL ?? "https://testnet.dplabs-internal.com"],
+      http: [process.env.PHAROS_RPC_URL ?? "https://atlantic.dplabs-internal.com"],
     },
   },
   blockExplorers: {

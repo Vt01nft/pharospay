@@ -50,8 +50,8 @@ Set `PHAROSPAY_PRIVATE_KEY` (the agent's wallet) and run the MCP server:
       "args": ["pharospay-skill"],
       "env": {
         "PHAROSPAY_PRIVATE_KEY": "0x...",
-        "PHAROS_CHAIN_ID": "688688",
-        "PHAROS_RPC_URL": "https://testnet.dplabs-internal.com"
+        "PHAROS_CHAIN_ID": "688689",
+        "PHAROS_RPC_URL": "https://atlantic.dplabs-internal.com"
       }
     }
   }

@@ -27,8 +27,8 @@ node packages/skill/dist/server.js
       "args": ["pharospay-skill"],
       "env": {
         "PHAROSPAY_PRIVATE_KEY": "0xYOUR_AGENT_KEY",
-        "PHAROS_CHAIN_ID": "688688",
-        "PHAROS_RPC_URL": "https://testnet.dplabs-internal.com"
+        "PHAROS_CHAIN_ID": "688689",
+        "PHAROS_RPC_URL": "https://atlantic.dplabs-internal.com"
       }
     }
   }
@@ -55,8 +55,8 @@ list_receipts({})
 | Var | Default | Notes |
 |-----|---------|-------|
 | `PHAROSPAY_PRIVATE_KEY` | — | Required. The agent's wallet. |
-| `PHAROS_CHAIN_ID` | `688688` | Pharos Atlantic testnet. |
-| `PHAROS_RPC_URL` | `https://testnet.dplabs-internal.com` | |
+| `PHAROS_CHAIN_ID` | `688689` | Pharos Atlantic testnet. |
+| `PHAROS_RPC_URL` | `https://atlantic.dplabs-internal.com` | |
 | `PUSD_ADDRESS` / `LEDGER_ADDRESS` | — | Deployed addresses (required off-anvil). |
 | `PHAROSPAY_STORE` | `~/.pharospay/store.json` | Budget + receipts file. |
 

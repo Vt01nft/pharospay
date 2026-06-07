@@ -76,8 +76,8 @@ infrastructure.
       "args": ["pharospay-skill"],
       "env": {
         "PHAROSPAY_PRIVATE_KEY": "0xYOUR_AGENT_KEY",
-        "PHAROS_CHAIN_ID": "688688",
-        "PHAROS_RPC_URL": "https://testnet.dplabs-internal.com"
+        "PHAROS_CHAIN_ID": "688689",
+        "PHAROS_RPC_URL": "https://atlantic.dplabs-internal.com"
       }
     }
   }
@@ -92,7 +92,7 @@ list_receipts({})
 get_reputation({})
 ```
 
-## Live deployment (Pharos Atlantic testnet, chainId 688688)
+## Live deployment (Pharos Atlantic testnet, chainId 688689)
 
 <!-- filled after deploy -->
 - pUSD: `<PUSD_ADDRESS>`
