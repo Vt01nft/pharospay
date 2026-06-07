@@ -39,3 +39,9 @@ apps/alpha-api/demo-serve.ts
 
 # local recording tool
 record-demo.mjs
+
+record-usage.mjs
+verify-render.mjs
+
+shot-lb.mjs
+debug-fetch.mjs

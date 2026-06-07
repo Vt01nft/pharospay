@@ -1,13 +1,14 @@
 import { createPublicClient, http, type Chain } from "viem";
-import { chainById, ledgerAbi, getAddresses, type Hex } from "@pharospay/shared";
-import { fmtUsd, short } from "../../../lib/leaderboard";
+import { chainById, ledgerAbi, getAddresses, type Hex } from "../../../lib/pharos";
+import { fmtUsd } from "../../../lib/leaderboard";
+import { Counter } from "../../Counter";
 
 export const dynamic = "force-dynamic";
 
 async function getStats(address: Hex) {
   try {
-    const chainId = Number(process.env.PHAROS_CHAIN_ID ?? "688688");
-    const rpcUrl = process.env.PHAROS_RPC_URL ?? "https://testnet.dplabs-internal.com";
+    const chainId = Number(process.env.PHAROS_CHAIN_ID ?? "688689");
+    const rpcUrl = process.env.PHAROS_RPC_URL ?? "https://atlantic.dplabs-internal.com";
     const base = chainById(chainId);
     const chain: Chain = { ...base, rpcUrls: { default: { http: [rpcUrl] } } };
     const client = createPublicClient({ chain, transport: http(rpcUrl) });
@@ -35,74 +36,101 @@ export default async function AgentPage({ params }: { params: { address: string 
   const explorer = `https://testnet.pharosscan.xyz/address/${address}`;
 
   return (
-    <main className="wrap">
-      <div className="brand">
-        <a className="logo" href="/">
-          P
-        </a>
-        <div className="title">Agent Profile</div>
-      </div>
-      <p className="subtitle">
-        <span className="addr">{address}</span>
-      </p>
-
-      <div className="stats">
-        <div className="stat">
-          <div className="n">{s ? s.repScore : 0}</div>
-          <div className="l">reputation</div>
+    <main className="sheet">
+      <header className="masthead">
+        <div className="kicker">Agent Dossier · Pharos Ledger</div>
+        <h1 className="title" style={{ fontSize: "clamp(34px,6vw,68px)" }}>
+          Account
+        </h1>
+        <p className="subhead dossier-id">{address}</p>
+        <div className="rule-double" />
+        <div className="dateline">
+          <span>On the ledger</span>
+          <span>{s ? `reputation ${s.repScore}` : "no record"}</span>
+          <span>x402 · EIP-3009</span>
         </div>
-        <div className="stat">
+      </header>
+
+      <section className="figures" style={{ marginTop: 34 }}>
+        <div className="figure">
           <div className="n">
-            <span className="flame">🔥</span> {s ? s.streak : 0}
+            <Counter value={s?.repScore ?? 0} />
           </div>
-          <div className="l">day streak</div>
+          <div className="l">Reputation</div>
         </div>
-        <div className="stat">
-          <div className="n">{s ? s.txCount : 0}</div>
-          <div className="l">payments</div>
+        <div className="figure">
+          <div className="n">
+            <Counter value={s?.streak ?? 0} />
+            <span className="u">days</span>
+          </div>
+          <div className="l">Daily streak</div>
         </div>
-      </div>
+        <div className="figure">
+          <div className="n">
+            <Counter value={s?.txCount ?? 0} />
+          </div>
+          <div className="l">Payments</div>
+        </div>
+      </section>
 
-      <div className="boards">
-        <div className="board">
-          <h2>
-            Paid <span className="tag">spend</span>
-          </h2>
-          <div className="row">
+      <div className="columns" style={{ marginTop: 40 }}>
+        <section className="ledger">
+          <div className="ledger-head">
+            <h2>Paid</h2>
+            <span className="by">volume</span>
+          </div>
+          <div className="entry" style={{ animationDelay: "120ms", cursor: "default" }}>
             <div className="rank">∑</div>
-            <div className="addr">total paid</div>
-            <div className="val">
+            <div className="who">
+              <div className="addr">total paid</div>
+            </div>
+            <div className="amount">
               {s ? fmtUsd(s.totalPaid) : "0"}
               <span className="u">pUSD</span>
             </div>
           </div>
-        </div>
-        <div className="board">
-          <h2>
-            Earned <span className="tag">earn</span>
-          </h2>
-          <div className="row">
+        </section>
+        <section className="ledger">
+          <div className="ledger-head">
+            <h2>Earned</h2>
+            <span className="by">volume</span>
+          </div>
+          <div className="entry" style={{ animationDelay: "180ms", cursor: "default" }}>
             <div className="rank">∑</div>
-            <div className="addr">total earned</div>
-            <div className="val">
+            <div className="who">
+              <div className="addr">total earned</div>
+            </div>
+            <div className="amount">
               {s ? fmtUsd(s.totalEarned) : "0"}
               <span className="u">pUSD</span>
             </div>
           </div>
-        </div>
+        </section>
       </div>
 
-      <div className="footer">
-        <p>
-          <span className="pill">share</span>{" "}
-          <a href={`/card/agent/${address}`}>proof card image</a> ·{" "}
-          <a href={`/?ref=${address}`}>referral link</a> ·{" "}
-          <a href={explorer} target="_blank" rel="noreferrer">
-            view on PharosScan
+      <section className="essay">
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+          <a className="seal" href={`/card/agent/${address}`}>
+            ◆ Proof card
           </a>
+          <a className="seal" href={`/?ref=${address}`}>
+            ◆ Referral link
+          </a>
+          <a className="seal" href={explorer} target="_blank" rel="noreferrer">
+            ◆ PharosScan
+          </a>
+        </div>
+        <p style={{ fontFamily: "var(--display)", fontStyle: "italic", color: "var(--ink-2)", marginTop: 18 }}>
+          A referral funds a new agent with bonus pUSD on both sides through the token&apos;s claimWithReferrer.
         </p>
-        <p>Referrals grant both sides bonus pUSD faucet credit via the token&apos;s claimWithReferrer.</p>
-      </div>
+      </section>
+
+      <footer className="colophon">
+        <span>
+          <a href="/">← Back to the ledger</a>
+        </span>
+        <span>read live from PharosPayLedger</span>
+      </footer>
     </main>
   );
 }

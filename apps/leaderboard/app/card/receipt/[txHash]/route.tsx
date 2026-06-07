@@ -2,9 +2,16 @@ import { ImageResponse } from "@vercel/og";
 
 export const runtime = "nodejs";
 
+const PAPER = "#f4efe3";
+const INK = "#15120b";
+const GOLD = "#9c6b1f";
+const RULE = "#b9ab8d";
+const MUTED = "#6c6354";
+const GREEN = "#2f6248";
+
 export async function GET(_req: Request, { params }: { params: { txHash: string } }) {
   const tx = params.txHash;
-  const shortTx = `${tx.slice(0, 10)}…${tx.slice(-8)}`;
+  const shortTx = `${tx.slice(0, 12)}…${tx.slice(-10)}`;
 
   return new ImageResponse(
     (
@@ -14,41 +21,26 @@ export async function GET(_req: Request, { params }: { params: { txHash: string 
           height: "630px",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
-          background: "linear-gradient(135deg, #0b1428 0%, #070b16 60%)",
-          color: "#e6edf7",
-          padding: "64px",
-          fontFamily: "sans-serif",
+          background: PAPER,
+          color: INK,
+          padding: "60px 64px",
+          fontFamily: "serif",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <div
-            style={{
-              width: "64px",
-              height: "64px",
-              borderRadius: "16px",
-              background: "linear-gradient(135deg,#22d3ee,#6366f1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "36px",
-              fontWeight: 800,
-              color: "#04121a",
-            }}
-          >
-            P
-          </div>
-          <div style={{ fontSize: "40px", fontWeight: 800 }}>PharosPay</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "20px", letterSpacing: "5px", color: GOLD, textTransform: "uppercase" }}>
+          <span>The Pharos Ledger</span>
+          <span style={{ color: MUTED }}>Receipt</span>
+        </div>
+        <div style={{ height: "6px", borderTop: `3px double ${RULE}`, borderBottom: `1px solid ${RULE}`, margin: "18px 0 40px" }} />
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "18px", marginTop: "20px" }}>
+          <div style={{ fontSize: "44px", color: GREEN, fontWeight: 700 }}>Payment settled</div>
+          <div style={{ fontSize: "26px", color: MUTED }}>x402 · gasless EIP-3009 settlement on Pharos</div>
+          <div style={{ fontSize: "30px", fontWeight: 700, letterSpacing: "-0.5px" }}>{shortTx}</div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          <div style={{ fontSize: "30px", color: "#22d3ee" }}>✓ Payment settled on Pharos</div>
-          <div style={{ fontSize: "30px", color: "#7d8aa3" }}>x402 · gasless EIP-3009 settlement</div>
-          <div style={{ fontSize: "40px", fontWeight: 700, fontFamily: "monospace" }}>{shortTx}</div>
-        </div>
-
-        <div style={{ fontSize: "24px", color: "#7d8aa3" }}>
-          Verify on testnet.pharosscan.xyz. A wallet and a reputation for agents on Pharos.
+        <div style={{ fontSize: "22px", color: MUTED, marginTop: "auto", letterSpacing: "1px", borderTop: `1px solid ${RULE}`, paddingTop: "24px" }}>
+          Verify on testnet.pharosscan.xyz · a wallet and a reputation for agents on Pharos
         </div>
       </div>
     ),

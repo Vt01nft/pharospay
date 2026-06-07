@@ -1,5 +1,3 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  transpilePackages: ["@pharospay/shared"],
-};
+const nextConfig = {};
 export default nextConfig;

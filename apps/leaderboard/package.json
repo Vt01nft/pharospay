@@ -10,7 +10,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@pharospay/shared": "workspace:*",
     "@vercel/og": "^0.6.4",
     "next": "14.2.15",
     "react": "18.3.1",

@@ -1,13 +1,20 @@
 import { createPublicClient, http, formatUnits, type Chain } from "viem";
-import { chainById, ledgerAbi, getAddresses, type Hex } from "@pharospay/shared";
+import { chainById, ledgerAbi, getAddresses, type Hex } from "./pharos";
 
 export interface AgentRow {
   address: Hex;
   txCount: number;
-  totalPaid: string; // base units
-  totalEarned: string; // base units
+  totalPaid: string;
+  totalEarned: string;
   streak: number;
   repScore: number;
+}
+
+export interface Settlement {
+  payer: Hex;
+  payee: Hex;
+  amount: string;
+  ts: number;
 }
 
 const paymentSettledEvent = ledgerAbi.find(
@@ -15,26 +22,53 @@ const paymentSettledEvent = ledgerAbi.find(
 ) as never;
 
 function makeClient() {
-  const chainId = Number(process.env.PHAROS_CHAIN_ID ?? "688688");
-  const rpcUrl = process.env.PHAROS_RPC_URL ?? "https://testnet.dplabs-internal.com";
+  const chainId = Number(process.env.PHAROS_CHAIN_ID ?? "688689");
+  const rpcUrl = process.env.PHAROS_RPC_URL ?? "https://atlantic.dplabs-internal.com";
   const base = chainById(chainId);
   const chain: Chain = { ...base, rpcUrls: { default: { http: [rpcUrl] } } };
   return { client: createPublicClient({ chain, transport: http(rpcUrl) }), ledger: getAddresses(chainId).ledger };
 }
 
-/** Read all agents that have transacted, with their on-chain reputation. */
-export async function fetchAgents(): Promise<AgentRow[]> {
+// The Pharos RPC caps eth_getLogs to a small block range, so we scan a bounded recent
+// window in small parallel chunks, and always read known seed addresses directly.
+const CHUNK = 800n;
+const WINDOW = 9000n;
+const MAX_CHUNKS = 14;
+
+export async function fetchLedger(): Promise<{ agents: AgentRow[]; settlements: Settlement[] }> {
   try {
     const { client, ledger } = makeClient();
-    const fromBlock = process.env.LEADERBOARD_FROM_BLOCK ? BigInt(process.env.LEADERBOARD_FROM_BLOCK) : 0n;
-    const logs = await client.getLogs({ address: ledger, event: paymentSettledEvent, fromBlock, toBlock: "latest" });
-    const addrs = new Set<Hex>();
-    for (const l of logs) {
-      const args = (l as { args: { payer: Hex; payee: Hex } }).args;
-      addrs.add(args.payer);
-      addrs.add(args.payee);
+    const latest = await client.getBlockNumber();
+    const envFrom = process.env.LEADERBOARD_FROM_BLOCK ? BigInt(process.env.LEADERBOARD_FROM_BLOCK) : 0n;
+    let from = envFrom > latest - WINDOW ? envFrom : latest - WINDOW;
+    if (from < 0n) from = 0n;
+
+    const ranges: [bigint, bigint][] = [];
+    for (let s = from; s <= latest && ranges.length < MAX_CHUNKS; s += CHUNK) {
+      ranges.push([s, s + CHUNK - 1n > latest ? latest : s + CHUNK - 1n]);
     }
-    return await Promise.all(
+
+    const addrs = new Set<Hex>();
+    const settlements: Settlement[] = [];
+    const results = await Promise.allSettled(
+      ranges.map(([s, e]) => client.getLogs({ address: ledger, event: paymentSettledEvent, fromBlock: s, toBlock: e })),
+    );
+    for (const r of results) {
+      if (r.status !== "fulfilled") continue;
+      for (const l of r.value) {
+        const a = (l as { args: { payer: Hex; payee: Hex; amount: bigint; ts: bigint } }).args;
+        addrs.add(a.payer);
+        addrs.add(a.payee);
+        settlements.push({ payer: a.payer, payee: a.payee, amount: a.amount.toString(), ts: Number(a.ts) });
+      }
+    }
+
+    // always include known participants so the ledger is never falsely empty
+    for (const seed of (process.env.SEED_ADDRESSES ?? "").split(",").map((x) => x.trim()).filter(Boolean)) {
+      addrs.add(seed as Hex);
+    }
+
+    const agents = await Promise.all(
       [...addrs].map(async (address) => {
         const st = (await client.readContract({
           address: ledger,
@@ -52,8 +86,11 @@ export async function fetchAgents(): Promise<AgentRow[]> {
         };
       }),
     );
+
+    settlements.reverse();
+    return { agents, settlements: settlements.slice(0, 14) };
   } catch {
-    return [];
+    return { agents: [], settlements: [] };
   }
 }
 
@@ -62,9 +99,9 @@ const byBig = (k: "totalPaid" | "totalEarned") => (a: AgentRow, b: AgentRow) =>
 
 export function rank(rows: AgentRow[]) {
   return {
-    payers: [...rows].sort(byBig("totalPaid")).slice(0, 25),
-    earners: [...rows].sort(byBig("totalEarned")).slice(0, 25),
-    streaks: [...rows].sort((a, b) => b.streak - a.streak || b.repScore - a.repScore).slice(0, 25),
+    payers: [...rows].filter((r) => r.txCount > 0).sort(byBig("totalPaid")).slice(0, 20),
+    earners: [...rows].filter((r) => BigInt(r.totalEarned) > 0n).sort(byBig("totalEarned")).slice(0, 20),
+    streaks: [...rows].sort((a, b) => b.streak - a.streak || b.repScore - a.repScore).slice(0, 20),
   };
 }
 
