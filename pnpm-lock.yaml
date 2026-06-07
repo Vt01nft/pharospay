@@ -18,6 +18,37 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.19.20)
 
+  apps/alpha-api:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^1.13.0
+        version: 1.19.14(hono@4.12.23)
+      '@pharospay/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@pharospay/x402-pharos':
+        specifier: workspace:*
+        version: link:../../packages/x402-pharos
+      hono:
+        specifier: ^4.6.0
+        version: 4.12.23
+      viem:
+        specifier: ^2.21.0
+        version: 2.52.2(typescript@5.9.3)(zod@3.25.76)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.7.0
+        version: 22.19.20
+      tsx:
+        specifier: ^4.19.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@22.19.20)
+
   packages/shared:
     dependencies:
       viem:
