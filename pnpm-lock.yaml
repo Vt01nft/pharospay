@@ -34,6 +34,28 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.19.20)
 
+  packages/x402-pharos:
+    dependencies:
+      '@pharospay/shared':
+        specifier: workspace:*
+        version: link:../shared
+      hono:
+        specifier: ^4.6.0
+        version: 4.12.23
+      viem:
+        specifier: ^2.21.0
+        version: 2.52.2(typescript@5.9.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.7.0
+        version: 22.19.20
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@22.19.20)
+
 packages:
 
   '@adraffy/ens-normalize@1.11.1':
@@ -584,6 +606,10 @@ packages:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
+
+  hono@4.12.23:
+    resolution: {integrity: sha512-eIaZ9qDgu7XV0pxOCrg7/WhnQ6Ivm22UcxhXx/A3dcbqbbYgBEkc6e/J/s7j2tS96zoB0S9VBdLwQNCWwUo4LA==}
+    engines: {node: '>=16.9.0'}
 
   isows@1.0.7:
     resolution: {integrity: sha512-I1fSfDCZL5P0v33sVqeTDSpcstAg/N+wF5HS033mogOVIp4B+oHC7oOCsA3axAbBSGTJ8QubbNmnIRN/h8U7hg==}
@@ -1147,6 +1173,8 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
+
+  hono@4.12.23: {}
 
   isows@1.0.7(ws@8.20.1):
     dependencies:
