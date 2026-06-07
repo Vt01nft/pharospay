@@ -26,7 +26,8 @@ function makeClient() {
 export async function fetchAgents(): Promise<AgentRow[]> {
   try {
     const { client, ledger } = makeClient();
-    const logs = await client.getLogs({ address: ledger, event: paymentSettledEvent, fromBlock: 0n, toBlock: "latest" });
+    const fromBlock = process.env.LEADERBOARD_FROM_BLOCK ? BigInt(process.env.LEADERBOARD_FROM_BLOCK) : 0n;
+    const logs = await client.getLogs({ address: ledger, event: paymentSettledEvent, fromBlock, toBlock: "latest" });
     const addrs = new Set<Hex>();
     for (const l of logs) {
       const args = (l as { args: { payer: Hex; payee: Hex } }).args;

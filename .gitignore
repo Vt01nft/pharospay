@@ -36,3 +36,6 @@ Thumbs.db
 # Local submission materials (not published)
 submission/
 apps/alpha-api/demo-serve.ts
+
+# local recording tool
+record-demo.mjs
