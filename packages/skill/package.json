@@ -1,0 +1,31 @@
+{
+  "name": "@pharospay/skill",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "pharospay-skill": "./dist/server.js"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "build": "tsup src/server.ts --format esm --clean",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@pharospay/shared": "workspace:*",
+    "viem": "^2.21.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@pharospay/x402-pharos": "workspace:*",
+    "hono": "^4.6.0",
+    "tsup": "^8.3.0",
+    "vitest": "^2.1.0",
+    "typescript": "^5.6.0",
+    "@types/node": "^22.7.0"
+  }
+}
