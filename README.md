@@ -1,71 +1,73 @@
-# PharosPay — give your AI agent a wallet on Pharos
+# PharosPay
 
-> The x402 payment rail for the Pharos agent economy. An AI agent can **autonomously
-> discover, pay for, and account for** on-chain services using stablecoins — safely,
-> within spending guardrails, with on-chain-verifiable receipts and a live reputation
-> leaderboard.
+PharosPay gives an AI agent a wallet on Pharos and a payment record that lives on-chain. The
+agent pays for things over x402 (gasless for the agent), and every payment is settled by a
+contract that keeps a reputation score, a daily streak, and a leaderboard rank. There is a
+referral that hands both sides some test pUSD.
 
-Built for the **Skill-to-Agent Dual Cascade Hackathon** (Pharos × Anvita Flow), Phase 1.
+Plenty of agent skills read balances or move tokens. The thing that's new here is the
+reputation: a way to see, on-chain, which agents actually pay and keep paying.
 
----
+Built for the Skill-to-Agent Dual Cascade Hackathon (Pharos and Anvita Flow), Phase 1.
 
 ## Why
 
-Pharos is built to power the AI agent economy — and **on-chain payments come first** in
-that mission. Anvita Flow's thesis is *trusted value exchange between machines* via the
-**x402** micropayment standard. PharosPay makes Pharos a first-class **x402 network**: it
-ships the missing on-chain pieces (an EIP-3009 stablecoin + a settlement/reputation
-ledger), a reusable **MCP Skill** that gives any agent a wallet, a drop-in provider
-middleware, a real paid service, and a social leaderboard that turns invisible payments
-into a daily, viral habit.
+Pharos is built for an economy where agents transact, and on-chain payments are the first thing
+it lists in that mission. Anvita Flow's pitch is trusted value exchange between machines, using
+the x402 micropayment standard. PharosPay makes Pharos a place x402 actually settles: it ships
+the missing pieces (an EIP-3009 stablecoin and a settlement and reputation ledger), a reusable
+skill that gives an agent a wallet, a small provider middleware, a real paid service, and a
+leaderboard that makes the activity visible.
 
-Nothing in the prior Pharos builder cohort did agent payments — this is net-new, on-thesis
-infrastructure.
+We checked the other Pharos skills. There are skills for wallet health, audits, token launches,
+RWA, and a couple for x402 payments. None of them give an agent a reputation it earns by paying.
+That is the part we lead with.
 
 ## What's in here
 
 ```
- Agent (MCP host: Claude / OpenAI)
-        │  pay_fetch(url)                    ┌──────────────────────────────┐
-        ▼                                    │  ③ PharosPay Skill (MCP)      │
-   ┌─────────┐   402 + requirements          │  pay_fetch · get_balance      │
-   │ Provider │◀───────────────────────────  │  set_budget(guardrails)       │
-   │ ② x402   │   X-PAYMENT (EIP-3009 sig)    │  list_receipts · get_reputation│
-   │ middleware│ ─────────────────────────▶  │  share_receipt · referral     │
-   └────┬─────┘                              └──────────────────────────────┘
-        │ settle()                                   ▲ reads reputation
-        ▼                                            │
-   ┌──────────────────────┐   relays    ┌────────────┴───────────┐
-   │ ⑥ PharosPayLedger    │────────────▶│ ① pUSD (EIP-3009)      │
-   │ records rep + streak │  transfer   │ + faucet + referral    │
-   └──────────┬───────────┘  WithAuth   └────────────────────────┘
-              │ PaymentSettled events
-              ▼
-   ⑥ Leaderboard + shareable OG cards (Next.js)        ④ Alpha API (real paid service)
+ Agent (MCP host: Claude or OpenAI)
+        |  pay_fetch(url)                    +------------------------------+
+        v                                    |  Skill (MCP)                 |
+   +---------+   402 + terms                 |  pay_fetch, get_balance      |
+   | Provider |<--------------------------   |  set_budget (guardrails)     |
+   | x402     |   X-PAYMENT (EIP-3009 sig)   |  list_receipts, get_reputation|
+   | middleware|--------------------------> |  share_receipt, referral     |
+   +----+-----+                              +------------------------------+
+        | settle()                                   ^ reads reputation
+        v                                            |
+   +----------------------+   relays    +------------+-----------+
+   | PharosPayLedger      |------------>| pUSD (EIP-3009)        |
+   | records rep + streak |  transfer   | + faucet + referral    |
+   +----------+-----------+  WithAuth   +------------------------+
+              | PaymentSettled events
+              v
+   Leaderboard + shareable cards (Next.js)        Alpha API (a real paid service)
 ```
 
 | Package | What it is |
 |---------|------------|
-| [`packages/contracts`](packages/contracts) | `PharosPayUSD` (EIP-3009 stablecoin + faucet + referral), `PharosPayLedger` (settlement relay + on-chain reputation/streak). Foundry. |
-| [`packages/shared`](packages/shared) | viem Pharos chain config, EIP-712 sign/verify helpers, ABIs, addresses. |
-| [`packages/x402-pharos`](packages/x402-pharos) | Provider middleware: `requirePayment()` — paywall any route behind x402 on Pharos, settle inline. |
-| [`packages/skill`](packages/skill) | **The hero**: PharosPay MCP Skill — the agent's wallet. `npx pharospay-skill`. |
-| [`apps/alpha-api`](apps/alpha-api) | A real paid service: Pharos wallet analytics, gated by x402. |
-| [`apps/leaderboard`](apps/leaderboard) | Live agent-economy leaderboard + shareable proof-of-payment cards + referrals. |
+| `packages/contracts` | `PharosPayUSD` (EIP-3009 stablecoin, faucet, referral) and `PharosPayLedger` (settlement plus on-chain reputation and streak). Foundry. |
+| `packages/shared` | viem chain config for Pharos, EIP-712 signing and verification, ABIs, addresses. |
+| `packages/x402-pharos` | Provider middleware: `requirePayment()` puts an x402 paywall on any route and settles it. |
+| `packages/skill` | The MCP skill: the agent's wallet. `npx pharospay-skill`. |
+| `apps/alpha-api` | A real paid service: Pharos wallet analytics behind an x402 paywall. |
+| `apps/leaderboard` | The leaderboard, the agent profiles, and the shareable cards. |
+| `pharos-skill` | The same thing packaged as a Pharos Agent Skill (SKILL.md format). |
 
-## How a payment works (real, on-chain)
+## How a payment works
 
-1. Agent calls `pay_fetch(url)`; the resource replies **`402`** with x402 requirements
-   (`asset`, `payTo`, `maxAmountRequired`, `network`).
-2. The Skill enforces **budget guardrails** (per-call cap, daily cap, allowlist) *before signing*.
-3. It signs a gasless **EIP-3009 `TransferWithAuthorization`** (the agent never needs gas).
-4. It resends with an `X-PAYMENT` header; the provider verifies the signature and
-   **settles through `PharosPayLedger`**, which relays the transfer **and** updates the
-   agent's on-chain reputation + streak in one tx.
-5. The Skill records a receipt; the settlement tx is visible on **PharosScan**, and the
-   agent climbs the leaderboard.
+1. The agent calls `pay_fetch(url)`. The resource answers `402` with the terms (asset, who to
+   pay, how much, which network).
+2. The skill checks the spending limits (per call, per day, allowed hosts) before it signs.
+3. It signs an EIP-3009 `TransferWithAuthorization`. The agent needs no gas for this.
+4. It resends with an `X-PAYMENT` header. The provider verifies the signature and settles
+   through `PharosPayLedger`, which moves the pUSD and updates reputation and streak in one
+   transaction.
+5. The skill records a receipt. The settlement shows up on PharosScan, and the agent moves on
+   the leaderboard.
 
-## Quickstart — give your agent a wallet
+## Quickstart
 
 ```jsonc
 // MCP client config
@@ -87,50 +89,47 @@ infrastructure.
 ```
 set_budget({ perCallMax: "0.10", dailyCap: "1.0" })
 pay_fetch({ url: "<ALPHA_API_URL>/alpha/wallet/0xabc...", maxAmount: "0.05" })
-# → analytics + { txHash, amount, asset, to }; tx on pharosscan.xyz
 list_receipts({})
 get_reputation({})
 ```
 
-## Live deployment (Pharos Atlantic testnet, chainId 688689)
+## Live deployment (Pharos Atlantic testnet, chain id 688689)
 
-<!-- filled after deploy -->
+<!-- filled in after deploy -->
 - pUSD: `<PUSD_ADDRESS>`
 - PharosPayLedger: `<LEDGER_ADDRESS>`
 - Alpha API: `<ALPHA_API_URL>`
 - Leaderboard: `<LEADERBOARD_URL>`
 - Explorer: https://testnet.pharosscan.xyz
 
-## Develop & verify
+## Run it and check it
 
 ```bash
 pnpm install
-# contracts (Foundry)
-cd packages/contracts && forge test
-# everything else (TS) — integration tests run against a local anvil chain
-pnpm -r test
+cd packages/contracts && forge test     # contracts
+pnpm -r test                            # everything else
 ```
 
-38 tests across 6 packages. Integration tests run the **full sign → verify → settle loop
-on a real EVM** (local anvil); the deployed artifact lives on Pharos testnet.
+38 tests across the packages. The integration tests run the whole sign, verify, settle loop on a
+local anvil chain, so the path is exercised end to end before anything touches the testnet.
 
-## Retention — the agent economy, made social
+## The reputation part
 
-Every payment is visible: a **live leaderboard** ranks agents by spend, earnings, and
-**daily streaks**; every payment yields a **shareable proof-of-payment card**; and a
-**referral loop** (`claimWithReferrer`) grants both sides bonus pUSD. You can only climb by
-transacting — so the hook pumps the exact metric Pharos cares about: on-chain payment volume.
+Every payment is visible. The leaderboard ranks agents by how much they've paid, how much
+they've earned, and their streak. Each payment can be turned into a shareable card, and the
+referral hands out bonus pUSD. You only move up by transacting, so the thing it encourages is the
+thing Pharos wants: more on-chain payments.
 
-## Phase 2 seed (Agent Arena)
+## Where this goes next (Phase 2)
 
-An autonomous Pharos agent that **buys** data via the Skill and **sells** its own analysis
-via the middleware — earning and spending on Pharos. Phase 1 ships the rails; Phase 2 ships
-the agent that lives on them.
+An agent that both pays for data through the skill and sells its own analysis through the
+middleware, earning and spending on Pharos. Phase 1 is the rails. Phase 2 is the agent that runs
+on them.
 
 ## Tech
 
-TypeScript · viem · Foundry/Solidity · `@modelcontextprotocol/sdk` · Hono · Next.js +
-`@vercel/og` · x402 (EIP-3009) · pnpm workspaces.
+TypeScript, viem, Foundry and Solidity, `@modelcontextprotocol/sdk`, Hono, Next.js with
+`@vercel/og`, x402 over EIP-3009, pnpm workspaces.
 
 ## License
 

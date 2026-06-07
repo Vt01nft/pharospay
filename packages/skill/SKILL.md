@@ -1,42 +1,46 @@
 ---
 name: pharospay
-description: Give your AI agent a wallet on Pharos. Use when an agent needs to autonomously pay for an x402-protected resource (an API, dataset, or tool that returns HTTP 402 Payment Required) using stablecoins on the Pharos network — safely, within spending guardrails, with on-chain-verifiable receipts.
+description: Use this when an AI agent needs to pay for something on Pharos and build a record while it does. The agent pays for x402-protected resources (an API, dataset, or tool that answers HTTP 402) with a stablecoin, stays inside spending limits you set, gets receipts with on-chain transaction hashes, and earns a reputation score and daily streak that show up on a leaderboard.
 license: MIT
 ---
 
-# PharosPay — the agent payment rail for Pharos
+# PharosPay
 
-PharosPay lets an AI agent **discover, pay for, and account for** paid resources on the
-Pharos network using the open **x402** standard. When a request returns `402 Payment
-Required`, the Skill signs a gasless **EIP-3009** authorization for the exact amount,
-the provider settles it on-chain through the `PharosPayLedger`, and the agent gets the
-resource back — all within budget guardrails you control.
+PharosPay lets an agent pay for things on Pharos using the x402 standard, and it keeps a record
+of those payments on-chain. When a request comes back with `402 Payment Required`, the skill
+signs a gasless EIP-3009 authorization for the exact amount, the provider settles it through the
+`PharosPayLedger`, and the agent gets the resource. That settlement also raises the agent's
+reputation and streak. Spending limits keep the agent from overspending.
 
-## When to use this skill
+## When to use it
 
-- The agent calls an API/tool and receives **HTTP 402** with x402 payment requirements.
-- You want an agent that can **pay-per-call** for data/compute/tools autonomously.
-- You need **spending guardrails** so the agent cannot drain the wallet.
-- You want **on-chain receipts** (Pharos tx hashes) for every payment.
+- The agent calls an API or tool and gets back `402` with x402 payment terms.
+- You want an agent that can pay per call for data, compute, or tools on its own.
+- You want limits so the agent can't drain the wallet.
+- You want a receipt (a Pharos tx hash) for every payment, and a reputation the agent earns.
 
 ## Tools
 
 | Tool | What it does |
 |------|--------------|
-| `pay_fetch` | Fetch a URL; if it returns 402, pay via x402 on Pharos (within guardrails) and return the resource + a receipt `{ txHash, amount, asset, to }`. |
+| `pay_fetch` | Fetch a url. If it answers 402, pay over x402 on Pharos (inside the limits) and return the resource plus a receipt. |
 | `get_wallet` | The agent's wallet address and the Pharos chain id. |
 | `get_balance` | pUSD and native PHRS balances. |
-| `set_budget` | Set guardrails: `perCallMax`, `dailyCap` (pUSD human units; `"0"` = unlimited), `allowlist`, `denylist` (hostnames). |
-| `get_budget` | Current guardrails + amount spent today. |
-| `list_receipts` | Recent payments, each with a Pharos tx hash you can open on the explorer. |
+| `set_budget` | Spending limits: `perCallMax`, `dailyCap` (pUSD, "0" means no limit), `allowlist`, `denylist` (hostnames). |
+| `get_budget` | The current limits and how much was spent today. |
+| `list_receipts` | Recent payments, each with a Pharos tx hash. |
+| `get_reputation` | The agent's reputation score, streak, totals, and leaderboard profile link. |
+| `share_receipt` | A shareable card image url for a payment or for the agent profile. |
+| `get_referral_link` | The agent's referral link. A new agent that claims through it gives both sides bonus pUSD. |
 
 ## How it works
 
-1. `pay_fetch(url)` → request returns `402` with `{ asset, payTo, maxAmountRequired, network }`.
-2. The Skill enforces guardrails (per-call cap, daily cap, allowlist) **before signing**.
-3. It signs an EIP-3009 `TransferWithAuthorization` (gasless for the agent).
-4. It resends with an `X-PAYMENT` header; the provider verifies + settles on Pharos.
-5. The Skill records a receipt; the settlement tx is visible on `pharosscan.xyz`.
+1. `pay_fetch(url)` gets a `402` with the terms (asset, who to pay, how much, network).
+2. The skill checks the limits before it signs anything.
+3. It signs an EIP-3009 `TransferWithAuthorization`. The agent needs no gas.
+4. It resends with an `X-PAYMENT` header. The provider verifies and settles on Pharos.
+5. The skill records a receipt. The settlement is on testnet.pharosscan.xyz, and the payment
+   raises reputation and streak.
 
 ## Setup
 
@@ -58,5 +62,5 @@ Set `PHAROSPAY_PRIVATE_KEY` (the agent's wallet) and run the MCP server:
 }
 ```
 
-Fund the wallet with test PHRS (gas) from the Pharos faucet and pUSD via the token's
-`claim()` faucet. Then set a budget, e.g. `set_budget({ perCallMax: "0.10", dailyCap: "1.0" })`.
+Fund the wallet with test PHRS for gas from the Pharos faucet, and get pUSD from the token's
+`claim()` faucet. Then set a limit, for example `set_budget({ perCallMax: "0.10", dailyCap: "1.0" })`.

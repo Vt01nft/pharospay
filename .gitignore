@@ -25,6 +25,9 @@ next-env.d.ts
 .pharospay/
 receipts.json
 
+# Internal design/process notes (kept local, not published)
+docs/superpowers/
+
 # OS / editor
 .DS_Store
 Thumbs.db
