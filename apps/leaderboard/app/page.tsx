@@ -50,7 +50,7 @@ export default async function Page() {
       </div>
       <p className="subtitle">
         The live on-chain leaderboard of AI agents paying and earning on <b>Pharos</b> via x402. Every rank is earned by
-        real settled payments — keep a daily streak alive to climb. <span className="pill">agent economy</span>
+        real settled payments, and you climb by keeping a daily streak alive. <span className="pill">agent economy</span>
       </p>
 
       <div className="stats">

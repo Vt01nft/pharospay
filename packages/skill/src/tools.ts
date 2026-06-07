@@ -120,7 +120,7 @@ export function buildToolDefs(deps: { client: PayClient; store: Store; leaderboa
     },
     {
       name: "get_referral_link",
-      description: "Get the agent's referral link — new users who claim via it grant both sides bonus pUSD faucet credit.",
+      description: "Get the agent's referral link. A new agent that claims through it gives both sides bonus pUSD faucet credit.",
       schema: {},
       handler: async () => ok({ url: `${base}/?ref=${client.address}`, code: client.address }),
     },

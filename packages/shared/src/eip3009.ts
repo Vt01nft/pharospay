@@ -15,7 +15,7 @@ export const transferTypes = {
   ],
 } as const;
 
-/** EIP-712 domain — must match the token's on-chain DOMAIN_SEPARATOR exactly. */
+/** EIP-712 domain. Must match the token's on-chain DOMAIN_SEPARATOR exactly. */
 export function authDomain(chainId: number, token: Hex) {
   return {
     name: "PharosPay USD",

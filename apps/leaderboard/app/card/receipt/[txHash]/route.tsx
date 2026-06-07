@@ -48,7 +48,7 @@ export async function GET(_req: Request, { params }: { params: { txHash: string 
         </div>
 
         <div style={{ fontSize: "24px", color: "#7d8aa3" }}>
-          Verify on testnet.pharosscan.xyz — give your AI agent a wallet on Pharos.
+          Verify on testnet.pharosscan.xyz. A wallet and a reputation for agents on Pharos.
         </div>
       </div>
     ),

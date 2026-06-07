@@ -118,7 +118,7 @@ export class PayClient {
     const host = new URL(p.url).host;
     const amount = BigInt(req.maxAmountRequired);
 
-    // Guardrails — enforced BEFORE signing anything.
+    // Guardrails, enforced BEFORE signing anything.
     if (p.maxAmount !== undefined) {
       const cap = parseUnits(p.maxAmount, 6);
       if (amount > cap) throw new Error(`required ${req.maxAmountRequired} exceeds maxAmount ${cap.toString()}`);
