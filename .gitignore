@@ -13,6 +13,11 @@ packages/contracts/out/
 packages/contracts/cache/
 packages/contracts/broadcast/
 
+# Next.js
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
 # Vercel
 .vercel/
 
