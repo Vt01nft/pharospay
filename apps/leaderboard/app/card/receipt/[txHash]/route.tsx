@@ -2,12 +2,7 @@ import { ImageResponse } from "@vercel/og";
 
 export const runtime = "nodejs";
 
-const PAPER = "#f4efe3";
-const INK = "#15120b";
-const GOLD = "#9c6b1f";
-const RULE = "#b9ab8d";
-const MUTED = "#6c6354";
-const GREEN = "#2f6248";
+const W2 = "rgba(255,255,255,0.62)";
 
 export async function GET(_req: Request, { params }: { params: { txHash: string } }) {
   const tx = params.txHash;
@@ -21,25 +16,28 @@ export async function GET(_req: Request, { params }: { params: { txHash: string 
           height: "630px",
           display: "flex",
           flexDirection: "column",
-          background: PAPER,
-          color: INK,
-          padding: "60px 64px",
-          fontFamily: "serif",
+          background: "linear-gradient(150deg, #1b2ddd 0%, #0012b8 48%, #000a5e 100%)",
+          color: "#fff",
+          padding: "58px 64px",
+          fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "20px", letterSpacing: "5px", color: GOLD, textTransform: "uppercase" }}>
-          <span>The Pharos Ledger</span>
-          <span style={{ color: MUTED }}>Receipt</span>
-        </div>
-        <div style={{ height: "6px", borderTop: `3px double ${RULE}`, borderBottom: `1px solid ${RULE}`, margin: "18px 0 40px" }} />
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "18px", marginTop: "20px" }}>
-          <div style={{ fontSize: "44px", color: GREEN, fontWeight: 700 }}>Payment settled</div>
-          <div style={{ fontSize: "26px", color: MUTED }}>x402 · gasless EIP-3009 settlement on Pharos</div>
-          <div style={{ fontSize: "30px", fontWeight: 700, letterSpacing: "-0.5px" }}>{shortTx}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+            <path d="M5 21 L13 21 L10.2 26.4 L2.2 26.4 Z" fill="#fff" opacity="0.45" />
+            <path d="M8.4 13.3 L19.6 13.3 L16.8 18.7 L5.6 18.7 Z" fill="#fff" opacity="0.72" />
+            <path d="M11.8 5.6 L26.2 5.6 L23.4 11 L9 11 Z" fill="#fff" />
+          </svg>
+          <div style={{ fontSize: "30px", fontWeight: 700 }}>PharosPay</div>
         </div>
 
-        <div style={{ fontSize: "22px", color: MUTED, marginTop: "auto", letterSpacing: "1px", borderTop: `1px solid ${RULE}`, paddingTop: "24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "18px", marginTop: "72px" }}>
+          <div style={{ fontSize: "26px", color: "#bfe9c9" }}>✓ Payment settled on Pharos</div>
+          <div style={{ fontSize: "24px", color: W2 }}>x402 · gasless EIP-3009 settlement</div>
+          <div style={{ fontSize: "40px", fontWeight: 700, letterSpacing: "-1px" }}>{shortTx}</div>
+        </div>
+
+        <div style={{ fontSize: "20px", color: W2, marginTop: "auto", paddingTop: "26px", borderTop: "1px solid rgba(255,255,255,0.18)" }}>
           Verify on testnet.pharosscan.xyz · a wallet and a reputation for agents on Pharos
         </div>
       </div>

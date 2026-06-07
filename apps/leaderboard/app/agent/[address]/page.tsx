@@ -1,7 +1,8 @@
 import { createPublicClient, http, type Chain } from "viem";
 import { chainById, ledgerAbi, getAddresses, type Hex } from "../../../lib/pharos";
-import { fmtUsd } from "../../../lib/leaderboard";
+import { fmtUsd, short } from "../../../lib/leaderboard";
 import { Counter } from "../../Counter";
+import { Logo } from "../../Logo";
 
 export const dynamic = "force-dynamic";
 
@@ -36,101 +37,109 @@ export default async function AgentPage({ params }: { params: { address: string 
   const explorer = `https://testnet.pharosscan.xyz/address/${address}`;
 
   return (
-    <main className="sheet">
-      <header className="masthead">
-        <div className="kicker">Agent Dossier · Pharos Ledger</div>
-        <h1 className="title" style={{ fontSize: "clamp(34px,6vw,68px)" }}>
-          Account
+    <>
+      <nav className="nav">
+        <div className="nav-inner">
+          <a href="/">
+            <Logo />
+          </a>
+          <div className="nav-links">
+            <a className="btn btn-ghost" href="/">
+              ← The Ledger
+            </a>
+            <a className="btn btn-primary" href="https://github.com/Vt01nft/pharospay">
+              GitHub
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <header className="hero">
+        <div className="eyebrow">Agent dossier · Pharos Atlantic</div>
+        <h1 style={{ fontFamily: "var(--mono)", fontSize: "clamp(22px,3.4vw,38px)", letterSpacing: "-0.02em" }}>
+          {short(address)}
         </h1>
-        <p className="subhead dossier-id">{address}</p>
-        <div className="rule-double" />
-        <div className="dateline">
-          <span>On the ledger</span>
-          <span>{s ? `reputation ${s.repScore}` : "no record"}</span>
-          <span>x402 · EIP-3009</span>
+        <p className="sub" style={{ fontFamily: "var(--mono)", fontSize: 14, wordBreak: "break-all" }}>{address}</p>
+
+        <div className="stats">
+          <div className="stat">
+            <div className="n">
+              <Counter value={s?.repScore ?? 0} />
+            </div>
+            <div className="l">Reputation</div>
+          </div>
+          <div className="stat">
+            <div className="n">
+              <Counter value={s?.streak ?? 0} />
+              <span className="u">days</span>
+            </div>
+            <div className="l">Daily streak</div>
+          </div>
+          <div className="stat">
+            <div className="n">
+              <Counter value={s?.txCount ?? 0} />
+            </div>
+            <div className="l">Payments</div>
+          </div>
         </div>
       </header>
 
-      <section className="figures" style={{ marginTop: 34 }}>
-        <div className="figure">
-          <div className="n">
-            <Counter value={s?.repScore ?? 0} />
-          </div>
-          <div className="l">Reputation</div>
+      <main className="wrap">
+        <div className="grid2" style={{ marginTop: 14 }}>
+          <section className="board">
+            <div className="board-head">
+              <h3>Paid</h3>
+              <span className="tag">volume</span>
+            </div>
+            <div className="row" style={{ animationDelay: "120ms" }}>
+              <div className="rank">∑</div>
+              <div className="who">
+                <div className="addr">total paid</div>
+              </div>
+              <div className="amount blue">
+                {s ? fmtUsd(s.totalPaid) : "0"}
+                <span className="u">pUSD</span>
+              </div>
+            </div>
+          </section>
+          <section className="board">
+            <div className="board-head">
+              <h3>Earned</h3>
+              <span className="tag">volume</span>
+            </div>
+            <div className="row" style={{ animationDelay: "180ms" }}>
+              <div className="rank">∑</div>
+              <div className="who">
+                <div className="addr">total earned</div>
+              </div>
+              <div className="amount blue">
+                {s ? fmtUsd(s.totalEarned) : "0"}
+                <span className="u">pUSD</span>
+              </div>
+            </div>
+          </section>
         </div>
-        <div className="figure">
-          <div className="n">
-            <Counter value={s?.streak ?? 0} />
-            <span className="u">days</span>
-          </div>
-          <div className="l">Daily streak</div>
-        </div>
-        <div className="figure">
-          <div className="n">
-            <Counter value={s?.txCount ?? 0} />
-          </div>
-          <div className="l">Payments</div>
-        </div>
-      </section>
 
-      <div className="columns" style={{ marginTop: 40 }}>
-        <section className="ledger">
-          <div className="ledger-head">
-            <h2>Paid</h2>
-            <span className="by">volume</span>
-          </div>
-          <div className="entry" style={{ animationDelay: "120ms", cursor: "default" }}>
-            <div className="rank">∑</div>
-            <div className="who">
-              <div className="addr">total paid</div>
-            </div>
-            <div className="amount">
-              {s ? fmtUsd(s.totalPaid) : "0"}
-              <span className="u">pUSD</span>
-            </div>
-          </div>
-        </section>
-        <section className="ledger">
-          <div className="ledger-head">
-            <h2>Earned</h2>
-            <span className="by">volume</span>
-          </div>
-          <div className="entry" style={{ animationDelay: "180ms", cursor: "default" }}>
-            <div className="rank">∑</div>
-            <div className="who">
-              <div className="addr">total earned</div>
-            </div>
-            <div className="amount">
-              {s ? fmtUsd(s.totalEarned) : "0"}
-              <span className="u">pUSD</span>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <section className="essay">
-        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
-          <a className="seal" href={`/card/agent/${address}`}>
-            ◆ Proof card
+        <div className="pillrow" style={{ marginTop: 24 }}>
+          <a className="pill solid" href={`/card/agent/${address}`}>
+            Proof card
           </a>
-          <a className="seal" href={`/?ref=${address}`}>
-            ◆ Referral link
+          <a className="pill" href={`/?ref=${address}`}>
+            Referral link
           </a>
-          <a className="seal" href={explorer} target="_blank" rel="noreferrer">
-            ◆ PharosScan
+          <a className="pill" href={explorer} target="_blank" rel="noreferrer">
+            View on PharosScan
           </a>
         </div>
-        <p style={{ fontFamily: "var(--display)", fontStyle: "italic", color: "var(--ink-2)", marginTop: 18 }}>
+        <p style={{ color: "var(--ink-2)", fontSize: 14.5, marginTop: 18, maxWidth: "60ch" }}>
           A referral funds a new agent with bonus pUSD on both sides through the token&apos;s claimWithReferrer.
         </p>
-      </section>
+      </main>
 
-      <footer className="colophon">
-        <span>
-          <a href="/">← Back to the ledger</a>
-        </span>
-        <span>read live from PharosPayLedger</span>
+      <footer className="footer">
+        <a href="/">← Back to the ledger</a>
+        <span>read live from the PharosPayLedger contract</span>
       </footer>
-    </main>
+    </>
   );
 }
