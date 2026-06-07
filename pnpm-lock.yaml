@@ -32,12 +32,6 @@ importers:
       '@hono/node-server':
         specifier: ^1.13.0
         version: 1.19.14(hono@4.12.23)
-      '@pharospay/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@pharospay/x402-pharos':
-        specifier: workspace:*
-        version: link:../../packages/x402-pharos
       hono:
         specifier: ^4.6.0
         version: 4.12.23

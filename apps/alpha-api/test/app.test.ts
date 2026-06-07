@@ -1,6 +1,6 @@
 import { it, expect } from "vitest";
 import { createApp } from "../src/app";
-import type { Hex } from "@pharospay/shared";
+import type { Hex } from "../src/lib/pharos";
 
 const MERCHANT = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC" as Hex;
 const ANVIL_KEY_0 = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" as Hex;

@@ -88,7 +88,7 @@ That is the part we lead with.
 
 ```
 set_budget({ perCallMax: "0.10", dailyCap: "1.0" })
-pay_fetch({ url: "<ALPHA_API_URL>/alpha/wallet/0xabc...", maxAmount: "0.05" })
+pay_fetch({ url: "https://alpha-api-seven.vercel.app/alpha/wallet/0xabc...", maxAmount: "0.05" })
 list_receipts({})
 get_reputation({})
 ```
@@ -96,6 +96,7 @@ get_reputation({})
 ## Live deployment (Pharos Atlantic testnet, chain id 688689)
 
 - Leaderboard (live): https://leaderboard-five-neon.vercel.app
+- Alpha API (live, paid): https://alpha-api-seven.vercel.app
 - pUSD: `0x3c37a2a0ebe4683f6242189733b352f05641cb73`
 - PharosPayLedger: `0x4ce02b05b3fa4e04404cdaea15c1f82be1781ca8`
 - Example x402 settlement: https://testnet.pharosscan.xyz/tx/0xd95c1836af9e44fe9c5795bbf736548040ae2426742b7dd99572ba21200621c8

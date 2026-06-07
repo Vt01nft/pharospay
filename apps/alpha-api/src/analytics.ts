@@ -1,5 +1,5 @@
 import { formatUnits, type PublicClient } from "viem";
-import { pusdAbi, type Hex } from "@pharospay/shared";
+import { pusdAbi, type Hex } from "./lib/pharos";
 
 export interface WalletAnalytics {
   address: Hex;

@@ -11,8 +11,6 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
-    "@pharospay/shared": "workspace:*",
-    "@pharospay/x402-pharos": "workspace:*",
     "hono": "^4.6.0",
     "viem": "^2.21.0"
   },

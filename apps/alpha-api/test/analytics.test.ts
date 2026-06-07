@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { PublicClient } from "viem";
 import { analyzeWallet } from "../src/analytics";
-import type { Hex } from "@pharospay/shared";
+import type { Hex } from "../src/lib/pharos";
 
 const TOKEN = "0x0000000000000000000000000000000000000abc" as Hex;
 const ADDR = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC" as Hex;

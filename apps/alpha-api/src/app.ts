@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { createPublicClient, http, type Chain } from "viem";
-import { chainById, getAddresses, type Hex } from "@pharospay/shared";
-import { requirePayment } from "@pharospay/x402-pharos";
+import { chainById, getAddresses, type Hex } from "./lib/pharos";
+import { requirePayment } from "./lib/x402";
 import { analyzeWallet } from "./analytics";
 
 export interface AlphaConfig {
