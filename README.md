@@ -95,6 +95,7 @@ get_reputation({})
 
 ## Live deployment (Pharos Atlantic testnet, chain id 688689)
 
+- Leaderboard (live): https://leaderboard-five-neon.vercel.app
 - pUSD: `0x3c37a2a0ebe4683f6242189733b352f05641cb73`
 - PharosPayLedger: `0x4ce02b05b3fa4e04404cdaea15c1f82be1781ca8`
 - Example x402 settlement: https://testnet.pharosscan.xyz/tx/0xd95c1836af9e44fe9c5795bbf736548040ae2426742b7dd99572ba21200621c8

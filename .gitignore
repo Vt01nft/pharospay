@@ -45,3 +45,5 @@ verify-render.mjs
 
 shot-lb.mjs
 debug-fetch.mjs
+
+shot-live.mjs

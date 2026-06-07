@@ -17,7 +17,7 @@ if (!pk) {
 }
 
 const { pusd, ledger } = getAddresses(chainId);
-const leaderboardUrl = process.env.LEADERBOARD_URL ?? "https://pharospay-leaderboard.vercel.app";
+const leaderboardUrl = process.env.LEADERBOARD_URL ?? "https://leaderboard-five-neon.vercel.app";
 const store = new Store();
 const client = new PayClient({ privateKey: pk, chainId, rpcUrl, token: pusd, ledger, network, store });
 
