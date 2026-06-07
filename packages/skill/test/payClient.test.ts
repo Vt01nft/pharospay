@@ -52,6 +52,7 @@ function makeClient(store: Store): PayClient {
     chainId: 31337,
     rpcUrl: ctx.rpcUrl,
     token: ctx.pusd,
+    ledger: ctx.ledger,
     network: NETWORK,
     store,
     fetchImpl: (input, init) => app.request(input, init as RequestInit),
@@ -68,6 +69,12 @@ it("pays a 402 endpoint and returns the resource + records a receipt", async () 
   expect(res.payment?.txHash).toMatch(/^0x[0-9a-fA-F]{64}$/);
   expect(store.listReceipts().length).toBe(1);
   expect(store.getSpentToday()).toBe(10000n);
+
+  // on-chain reputation was recorded by the ledger settlement
+  const rep = await client.getReputation();
+  expect(rep.txCount).toBe(1);
+  expect(rep.streak).toBe(1);
+  expect(rep.totalPaid).toBe("10000");
 }, 60000);
 
 it("refuses to pay above maxAmount without signing", async () => {

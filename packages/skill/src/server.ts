@@ -16,12 +16,13 @@ if (!pk) {
   process.exit(1);
 }
 
-const { pusd } = getAddresses(chainId);
+const { pusd, ledger } = getAddresses(chainId);
+const leaderboardUrl = process.env.LEADERBOARD_URL ?? "https://pharospay-leaderboard.vercel.app";
 const store = new Store();
-const client = new PayClient({ privateKey: pk, chainId, rpcUrl, token: pusd, network, store });
+const client = new PayClient({ privateKey: pk, chainId, rpcUrl, token: pusd, ledger, network, store });
 
 const server = new McpServer({ name: "pharospay", version: "0.1.0" });
-for (const t of buildToolDefs({ client, store })) {
+for (const t of buildToolDefs({ client, store, leaderboardUrl })) {
   server.tool(t.name, t.description, t.schema, t.handler as never);
 }
 

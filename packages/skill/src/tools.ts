@@ -25,8 +25,9 @@ function fail(msg: string): ToolResult {
 const toBase = (human: string) => parseUnits(human, 6).toString();
 
 /** Build the composable PharosPay tool set. */
-export function buildToolDefs(deps: { client: PayClient; store: Store }): ToolDef[] {
-  const { client, store } = deps;
+export function buildToolDefs(deps: { client: PayClient; store: Store; leaderboardUrl: string }): ToolDef[] {
+  const { client, store, leaderboardUrl } = deps;
+  const base = leaderboardUrl.replace(/\/$/, "");
   return [
     {
       name: "pay_fetch",
@@ -94,6 +95,34 @@ export function buildToolDefs(deps: { client: PayClient; store: Store }): ToolDe
       description: "List recent on-chain payment receipts (each includes a Pharos tx hash).",
       schema: { limit: z.number().optional() },
       handler: async (a) => ok(store.listReceipts(a?.limit ?? 20)),
+    },
+    {
+      name: "get_reputation",
+      description:
+        "Get the agent's on-chain reputation: payment count, total paid/earned, daily streak, score, and leaderboard profile URL.",
+      schema: {},
+      handler: async () => {
+        try {
+          const rep = await client.getReputation();
+          return ok({ ...rep, profileUrl: `${base}/agent/${rep.address}` });
+        } catch (e) {
+          return fail(`get_reputation error: ${(e as Error).message}`);
+        }
+      },
+    },
+    {
+      name: "share_receipt",
+      description:
+        "Get a shareable proof-of-payment card image URL for a specific tx hash, or the agent's profile card if omitted.",
+      schema: { txHash: z.string().optional() },
+      handler: async (a) =>
+        ok({ cardUrl: a?.txHash ? `${base}/card/receipt/${a.txHash}` : `${base}/card/agent/${client.address}` }),
+    },
+    {
+      name: "get_referral_link",
+      description: "Get the agent's referral link — new users who claim via it grant both sides bonus pUSD faucet credit.",
+      schema: {},
+      handler: async () => ok({ url: `${base}/?ref=${client.address}`, code: client.address }),
     },
   ];
 }

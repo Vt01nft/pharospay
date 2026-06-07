@@ -20,7 +20,7 @@ it("registers all tools on a real McpServer (matches server.ts wiring)", () => {
   const server = new McpServer({ name: "pharospay", version: "0.1.0" });
 
   expect(() => {
-    for (const t of buildToolDefs({ client, store })) {
+    for (const t of buildToolDefs({ client, store, leaderboardUrl: "https://lb.test" })) {
       server.tool(t.name, t.description, t.schema, t.handler as never);
     }
   }).not.toThrow();

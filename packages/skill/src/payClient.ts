@@ -3,6 +3,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   chainById,
   pusdAbi,
+  ledgerAbi,
   buildAuthorization,
   signAuthorization,
   type Hex,
@@ -18,9 +19,19 @@ export interface PayClientConfig {
   chainId: number;
   rpcUrl: string;
   token: Hex;
+  ledger?: Hex;
   network?: string;
   store?: Store;
   fetchImpl?: FetchLike;
+}
+
+export interface Reputation {
+  address: Hex;
+  txCount: number;
+  totalPaid: string;
+  totalEarned: string;
+  streak: number;
+  repScore: number;
 }
 
 export interface PayResult {
@@ -73,6 +84,24 @@ export class PayClient {
       this.publicClient.getBalance({ address: this.account.address }),
     ]);
     return { pUSD: formatUnits(pusd, 6), PHRS: formatUnits(native, 18), pUSDRaw: pusd.toString() };
+  }
+
+  async getReputation(): Promise<Reputation> {
+    if (!this.cfg.ledger) throw new Error("ledger address not configured");
+    const st = (await this.publicClient.readContract({
+      address: this.cfg.ledger,
+      abi: ledgerAbi,
+      functionName: "stats",
+      args: [this.account.address],
+    })) as readonly bigint[];
+    return {
+      address: this.account.address,
+      txCount: Number(st[0]),
+      totalPaid: st[1].toString(),
+      totalEarned: st[2].toString(),
+      streak: Number(st[4]),
+      repScore: Number(st[5]),
+    };
   }
 
   async payFetch(p: { url: string; method?: string; body?: string; maxAmount?: string }): Promise<PayResult> {
