@@ -11,7 +11,7 @@ product is agent **identity and trust**.
 ## Install
 
 ```bash
-npx skills add https://github.com/<owner>/pharospay-skill
+npx skills add https://github.com/Vt01nft/pharospay-skill
 export PRIVATE_KEY=0x...            # agent wallet (testnet only)
 cd scripts && npm install          # viem, for the x402 pay script
 ```
