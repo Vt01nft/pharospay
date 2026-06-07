@@ -32,3 +32,7 @@ docs/superpowers/
 .DS_Store
 Thumbs.db
 .playwright-mcp/
+
+# Local submission materials (not published)
+submission/
+apps/alpha-api/demo-serve.ts
