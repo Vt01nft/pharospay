@@ -1,0 +1,21 @@
+:root{--blue:#0012b8;--ink:#16161d;--mist:#f2f4f5;--line:#e7e9ef;--mut:#585c6b;--tint:#eef1ff}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--mist);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em}
+a{text-decoration:none}
+.nav{display:flex;justify-content:center;padding:14px 16px}
+.ni{width:100%;max-width:920px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:11px 14px 11px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 30px rgba(0,10,94,.06)}
+.lg{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:var(--ink)}.lg svg{color:var(--blue)}
+.btn{font-size:14px;font-weight:600;padding:9px 16px;border-radius:999px;transition:transform .15s}.btn:hover{transform:translateY(-1px)}
+.pri{background:var(--blue);color:#fff}.gh{border:1px solid var(--line);color:var(--ink)}
+.hero{margin:16px;border-radius:26px;color:#fff;padding:64px 48px 52px;background:radial-gradient(120% 120% at 80% 6%,rgba(255,255,255,.2),transparent 42%),linear-gradient(168deg,#1b2ddd,var(--blue) 46%,#000a5e)}
+.ey{font-family:ui-monospace,monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.62);margin-bottom:16px}
+.hero h1{font-size:clamp(34px,6vw,60px);line-height:1;letter-spacing:-.03em;margin:0;font-weight:800}
+.hero p{font-size:18px;color:rgba(255,255,255,.92);max-width:60ch;margin:18px 0 26px;line-height:1.5}
+.cmd{display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:14px 18px;font-family:ui-monospace,monospace;font-size:14px}
+.wrap{max-width:920px;margin:0 auto;padding:8px 24px 80px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px 30px;margin-top:22px}
+.card h2{margin:0 0 10px;font-size:18px}.card p{color:var(--mut);line-height:1.6;margin:0 0 12px}
+code{font-family:ui-monospace,monospace;background:var(--tint);color:var(--blue);padding:2px 7px;border-radius:6px;font-size:.92em;word-break:break-all}
+.row{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
+.lnk{color:var(--blue);font-weight:600}
+.foot{max-width:920px;margin:18px auto 0;padding:18px 24px;color:#9aa0b2;font-size:13px;font-family:ui-monospace,monospace;border-top:1px solid var(--line)}

@@ -47,3 +47,7 @@ shot-lb.mjs
 debug-fetch.mjs
 
 shot-live.mjs
+
+record-live.mjs
+
+shot-alpha.mjs
