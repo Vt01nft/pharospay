@@ -10,6 +10,14 @@ reputation: a way to see, on-chain, which agents actually pay and keep paying.
 
 Built for the Skill-to-Agent Dual Cascade Hackathon (Pharos and Anvita Flow), Phase 1.
 
+**Live now:** [Leaderboard](https://leaderboard-five-neon.vercel.app) · [Paid API](https://alpha-api-seven.vercel.app) · [Skill repo](https://github.com/Vt01nft/pharospay-skill) · [Example on-chain settlement](https://testnet.pharosscan.xyz/tx/0x099fec162bada1386417a335c755fb5b4eac14135ddb68af4b8352b3c37af8f0)
+
+![The Pharos Ledger, the live leaderboard](docs/screenshots/leaderboard.png)
+
+The paid API an agent calls, settled on Pharos over x402:
+
+![Alpha API](docs/screenshots/alpha-api.png)
+
 ## Why
 
 Pharos is built for an economy where agents transact, and on-chain payments are the first thing
