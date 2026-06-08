@@ -1,6 +1,6 @@
 import { ImageResponse } from "@vercel/og";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 const W2 = "rgba(255,255,255,0.62)";
 

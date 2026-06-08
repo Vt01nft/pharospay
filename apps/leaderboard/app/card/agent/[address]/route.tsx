@@ -2,7 +2,7 @@ import { ImageResponse } from "@vercel/og";
 import { createPublicClient, http, formatUnits, type Chain } from "viem";
 import { chainById, ledgerAbi, getAddresses, type Hex } from "../../../../lib/pharos";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 async function getStats(address: Hex) {
   try {
