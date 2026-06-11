@@ -36,6 +36,16 @@ in the demo are throwaway. This file is an honest review of the security model a
    Alpha API's server environment. On testnet this is acceptable; for real value it would move to
    a KMS or a dedicated relayer service, and the faucet would be removed.
 
+## The skill's outbound requests (SSRF)
+
+`pay_fetch` takes a URL from the agent. To prevent server-side request forgery (CWE-918), the
+skill refuses non-http(s) schemes and private or internal hosts (localhost, `127.0.0.0/8`,
+`10/8`, `172.16/12`, `192.168/16`, `169.254/16` including the cloud metadata endpoint, and IPv6
+link-local and unique-local) before it makes any request. Set `PHAROSPAY_ALLOW_LOCAL=1` to allow
+localhost during local development. The spending guardrails (per-call cap, daily cap, host
+allow/deny lists) apply on top of this. A hostname that resolves to a private IP through DNS is a
+residual (DNS rebinding); a server deployment would resolve the name and re-check the resolved IP.
+
 ## Reporting
 
 This is a hackathon project on testnet. For anything you find, open an issue on the repository.

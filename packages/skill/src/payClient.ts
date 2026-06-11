@@ -48,6 +48,44 @@ async function safeJson(r: Response): Promise<unknown> {
   }
 }
 
+/**
+ * SSRF guard (CWE-918). Reject non-http(s) schemes and private/internal hosts before the agent
+ * fetches a URL, so it cannot be steered into cloud metadata (169.254.169.254), localhost, or
+ * internal network ranges. Set PHAROSPAY_ALLOW_LOCAL=1 to allow localhost during local dev.
+ */
+export function assertSafeUrl(raw: string): void {
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    throw new Error(`invalid url: ${raw}`);
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:") {
+    throw new Error(`refusing url with scheme "${u.protocol}" (only http and https are allowed)`);
+  }
+  if (process.env.PHAROSPAY_ALLOW_LOCAL === "1") return;
+  if (isPrivateHost(u.hostname.toLowerCase())) {
+    throw new Error(`refusing to fetch a private or internal address: ${u.hostname}`);
+  }
+}
+
+function isPrivateHost(host: string): boolean {
+  const h = host.replace(/^\[|\]$/g, "");
+  if (h === "localhost" || h.endsWith(".localhost") || h === "0.0.0.0" || h === "::1" || h === "::") return true;
+  const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const a = Number(m[1]);
+    const b = Number(m[2]);
+    if (a === 0 || a === 127 || a === 10) return true;
+    if (a === 169 && b === 254) return true; // link-local + cloud metadata (169.254.169.254)
+    if (a === 192 && b === 168) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+  }
+  if (h.startsWith("fe80") || h.startsWith("fc") || h.startsWith("fd")) return true; // IPv6 link-local + ULA
+  return false;
+}
+
 /** The agent's x402 payer: runs the 402 flow against Pharos within budget guardrails. */
 export class PayClient {
   private account: ReturnType<typeof privateKeyToAccount>;
@@ -105,6 +143,7 @@ export class PayClient {
   }
 
   async payFetch(p: { url: string; method?: string; body?: string; maxAmount?: string }): Promise<PayResult> {
+    assertSafeUrl(p.url);
     const method = p.method ?? "GET";
     const first = await this.fetchImpl(p.url, { method, body: p.body });
     if (first.status !== 402) {
