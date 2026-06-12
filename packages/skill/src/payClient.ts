@@ -167,7 +167,15 @@ export class PayClient {
     this.chain = { ...base, rpcUrls: { default: { http: [cfg.rpcUrl] } } };
     this.publicClient = createPublicClient({ chain: this.chain, transport: http(cfg.rpcUrl) });
     this.store = cfg.store ?? new Store();
-    this.fetchImpl = cfg.fetchImpl ?? ((input, init) => fetch(input, init));
+    // Sanitizer at the sink: the default transport validates the destination (scheme +
+    // canonicalized IP range) before the request leaves the process, so even a direct call
+    // cannot reach an internal address. safeFetch adds DNS resolution and redirect re-checks.
+    this.fetchImpl =
+      cfg.fetchImpl ??
+      ((input, init) => {
+        assertSafeUrl(input);
+        return fetch(input, init);
+      });
     // Only resolve DNS for the SSRF check when we own the transport (the default global fetch).
     // An injected fetchImpl is a controlled transport, so the caller is responsible for routing.
     this.resolveDns = !cfg.fetchImpl;
