@@ -17,15 +17,16 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@pharospay/shared": "workspace:*",
+    "ipaddr.js": "^2.4.0",
     "viem": "^2.21.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
     "@pharospay/x402-pharos": "workspace:*",
+    "@types/node": "^22.7.0",
     "hono": "^4.6.0",
     "tsup": "^8.3.0",
-    "vitest": "^2.1.0",
     "typescript": "^5.6.0",
-    "@types/node": "^22.7.0"
+    "vitest": "^2.1.0"
   }
 }

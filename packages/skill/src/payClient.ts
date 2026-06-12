@@ -11,6 +11,8 @@ import {
   type PaymentRequired,
 } from "@pharospay/shared";
 import { Store, type Receipt } from "./store";
+import { lookup } from "node:dns/promises";
+import ipaddr from "ipaddr.js";
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -48,10 +50,37 @@ async function safeJson(r: Response): Promise<unknown> {
   }
 }
 
+// ipaddr.js range names that are not safe to reach from an outbound request.
+const BLOCKED_RANGES = new Set([
+  "unspecified", // 0.0.0.0, ::
+  "broadcast", // 255.255.255.255
+  "loopback", // 127.0.0.0/8, ::1
+  "private", // 10/8, 172.16/12, 192.168/16
+  "linkLocal", // 169.254/16 (incl. cloud metadata), fe80::/10
+  "uniqueLocal", // fc00::/7
+  "carrierGradeNat", // 100.64/10
+  "reserved", // 192.0.2.0/24, 240/4, etc.
+]);
+
+/** True if an IP literal (any form ipaddr.js accepts) sits in a private/internal range. */
+function isBlockedIp(addr: string): boolean {
+  let ip;
+  try {
+    ip = ipaddr.parse(addr);
+  } catch {
+    return false; // not an IP literal
+  }
+  if (ip.kind() === "ipv6" && (ip as ipaddr.IPv6).isIPv4MappedAddress()) {
+    ip = (ip as ipaddr.IPv6).toIPv4Address(); // unwrap ::ffff:127.0.0.1 and check the v4 range
+  }
+  return BLOCKED_RANGES.has(ip.range());
+}
+
 /**
- * SSRF guard (CWE-918). Reject non-http(s) schemes and private/internal hosts before the agent
- * fetches a URL, so it cannot be steered into cloud metadata (169.254.169.254), localhost, or
- * internal network ranges. Set PHAROSPAY_ALLOW_LOCAL=1 to allow localhost during local dev.
+ * Synchronous SSRF guard (CWE-918). Rejects non-http(s) schemes and IP-literal hosts in
+ * private/internal ranges. WHATWG URL normalization plus ipaddr.js canonicalization mean
+ * hex/octal/decimal IPv4 (0x7f000001, 2130706433) and IPv4-mapped IPv6 are caught here.
+ * Set PHAROSPAY_ALLOW_LOCAL=1 to allow localhost/internal targets during local development.
  */
 export function assertSafeUrl(raw: string): void {
   let u: URL;
@@ -64,26 +93,63 @@ export function assertSafeUrl(raw: string): void {
     throw new Error(`refusing url with scheme "${u.protocol}" (only http and https are allowed)`);
   }
   if (process.env.PHAROSPAY_ALLOW_LOCAL === "1") return;
-  if (isPrivateHost(u.hostname.toLowerCase())) {
+  const host = u.hostname.replace(/^\[|\]$/g, "").toLowerCase();
+  if (host === "localhost" || host.endsWith(".localhost")) {
+    throw new Error(`refusing to fetch a private or internal address: ${u.hostname}`);
+  }
+  if (isBlockedIp(host)) {
     throw new Error(`refusing to fetch a private or internal address: ${u.hostname}`);
   }
 }
 
-function isPrivateHost(host: string): boolean {
-  const h = host.replace(/^\[|\]$/g, "");
-  if (h === "localhost" || h.endsWith(".localhost") || h === "0.0.0.0" || h === "::1" || h === "::") return true;
-  const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (m) {
-    const a = Number(m[1]);
-    const b = Number(m[2]);
-    if (a === 0 || a === 127 || a === 10) return true;
-    if (a === 169 && b === 254) return true; // link-local + cloud metadata (169.254.169.254)
-    if (a === 192 && b === 168) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+/**
+ * Async SSRF guard for the real-network path. Runs the sync checks, then for hostnames that are
+ * not IP literals it resolves DNS and rejects if ANY resolved address is private/internal. This
+ * closes the DNS-rebinding and "hostname points at an internal IP" bypass.
+ */
+async function assertSafeUrlResolved(raw: string): Promise<void> {
+  assertSafeUrl(raw);
+  if (process.env.PHAROSPAY_ALLOW_LOCAL === "1") return;
+  const host = new URL(raw).hostname.replace(/^\[|\]$/g, "");
+  if (ipaddr.isValid(host)) return; // already checked as a literal
+  let addrs: { address: string }[];
+  try {
+    addrs = await lookup(host, { all: true });
+  } catch {
+    throw new Error(`could not resolve host: ${host}`);
   }
-  if (h.startsWith("fe80") || h.startsWith("fc") || h.startsWith("fd")) return true; // IPv6 link-local + ULA
-  return false;
+  for (const a of addrs) {
+    if (isBlockedIp(a.address)) {
+      throw new Error(`refusing to fetch ${host}: it resolves to a private/internal address (${a.address})`);
+    }
+  }
+}
+
+const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308]);
+
+/**
+ * Fetch that re-checks the SSRF guard on every hop. Redirects are handled manually so a public
+ * URL cannot 3xx-redirect the agent onto an internal address. `resolveDns` is true on the real
+ * fetch path and false when a transport is injected (the caller controls where requests go).
+ */
+async function safeFetch(
+  fetchImpl: FetchLike,
+  url: string,
+  init: RequestInit,
+  resolveDns: boolean,
+  depth = 0,
+): Promise<Response> {
+  if (resolveDns) await assertSafeUrlResolved(url);
+  else assertSafeUrl(url);
+  const res = await fetchImpl(url, { ...init, redirect: "manual" });
+  if (REDIRECT_STATUS.has(res.status) && depth < 5) {
+    const location = res.headers.get("location");
+    if (location) {
+      const next = new URL(location, url).href;
+      return safeFetch(fetchImpl, next, init, resolveDns, depth + 1);
+    }
+  }
+  return res;
 }
 
 /** The agent's x402 payer: runs the 402 flow against Pharos within budget guardrails. */
@@ -93,6 +159,7 @@ export class PayClient {
   private publicClient: PublicClient;
   private store: Store;
   private fetchImpl: FetchLike;
+  private resolveDns: boolean;
 
   constructor(private cfg: PayClientConfig) {
     this.account = privateKeyToAccount(cfg.privateKey);
@@ -101,6 +168,9 @@ export class PayClient {
     this.publicClient = createPublicClient({ chain: this.chain, transport: http(cfg.rpcUrl) });
     this.store = cfg.store ?? new Store();
     this.fetchImpl = cfg.fetchImpl ?? ((input, init) => fetch(input, init));
+    // Only resolve DNS for the SSRF check when we own the transport (the default global fetch).
+    // An injected fetchImpl is a controlled transport, so the caller is responsible for routing.
+    this.resolveDns = !cfg.fetchImpl;
   }
 
   get address(): Hex {
@@ -143,9 +213,8 @@ export class PayClient {
   }
 
   async payFetch(p: { url: string; method?: string; body?: string; maxAmount?: string }): Promise<PayResult> {
-    assertSafeUrl(p.url);
     const method = p.method ?? "GET";
-    const first = await this.fetchImpl(p.url, { method, body: p.body });
+    const first = await safeFetch(this.fetchImpl, p.url, { method, body: p.body }, this.resolveDns);
     if (first.status !== 402) {
       return { status: first.status, data: await safeJson(first) };
     }
@@ -177,7 +246,7 @@ export class PayClient {
     };
     const header = Buffer.from(JSON.stringify(payload)).toString("base64");
 
-    const second = await this.fetchImpl(p.url, { method, body: p.body, headers: { "X-PAYMENT": header } });
+    const second = await safeFetch(this.fetchImpl, p.url, { method, body: p.body, headers: { "X-PAYMENT": header } }, this.resolveDns);
     if (!second.ok) {
       throw new Error(`payment failed (${second.status}): ${JSON.stringify(await safeJson(second))}`);
     }

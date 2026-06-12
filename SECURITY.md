@@ -38,13 +38,23 @@ in the demo are throwaway. This file is an honest review of the security model a
 
 ## The skill's outbound requests (SSRF)
 
-`pay_fetch` takes a URL from the agent. To prevent server-side request forgery (CWE-918), the
-skill refuses non-http(s) schemes and private or internal hosts (localhost, `127.0.0.0/8`,
-`10/8`, `172.16/12`, `192.168/16`, `169.254/16` including the cloud metadata endpoint, and IPv6
-link-local and unique-local) before it makes any request. Set `PHAROSPAY_ALLOW_LOCAL=1` to allow
-localhost during local development. The spending guardrails (per-call cap, daily cap, host
-allow/deny lists) apply on top of this. A hostname that resolves to a private IP through DNS is a
-residual (DNS rebinding); a server deployment would resolve the name and re-check the resolved IP.
+`pay_fetch` takes a URL from the agent, so it is guarded against server-side request forgery
+(CWE-918) before any request is made. The guard:
+
+- **Rejects non-http(s) schemes** (`file:`, `gopher:`, etc.).
+- **Canonicalizes the host and rejects private/internal ranges.** WHATWG URL normalization plus
+  `ipaddr.js` mean alternate IPv4 encodings (`0x7f000001`, `2130706433`, `0177.0.0.1`) and
+  IPv4-mapped IPv6 (`::ffff:127.0.0.1`) all resolve to the same blocked check as
+  `127.0.0.0/8`, `10/8`, `172.16/12`, `192.168/16`, `169.254/16` (including the cloud metadata
+  endpoint), `100.64/10`, and IPv6 loopback, link-local, and unique-local.
+- **Resolves DNS and re-checks.** For hostnames it calls `dns.lookup({ all: true })` and rejects
+  if any resolved address is private or internal, which closes the DNS-rebinding bypass.
+- **Re-checks every redirect.** Redirects are followed manually (bounded to five hops) and each
+  `Location` is re-validated, so a public URL cannot 3xx-redirect the agent onto an internal one.
+
+Set `PHAROSPAY_ALLOW_LOCAL=1` to allow localhost during local development. The spending guardrails
+(per-call cap, daily cap, host allow/deny lists) apply on top of this. The same guard is
+implemented in the standalone `pay.mjs` script using Node's `dns` and `net` built-ins.
 
 ## Reporting
 
